@@ -1,44 +1,30 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[1]:
-
-
-import keras
-import tensorflow as tf
 import multiprocessing as mp
-
-# In[2]:
-
-
-import cv2
-import random
-import numpy as np
 import pathlib
-import dlib
-import seaborn as sns
-import matplotlib.pyplot as plt
-from PIL import Image
+import random
 from pathlib import Path
 
-# # Load Data
+import cv2
+import dlib
+import keras
+import numpy as np
+import tensorflow as tf
+from PIL import Image
 
-# In[3]:
-model = keras.models.load_model('model')
+# model = keras.models.load_model('model')
 
 root_path = Path.cwd()
-
-
 
 
 def load_file(file_path):
     data = np.load(file_path)
     return data['data']
 
+
 def expand_image_channels(image):
     image_arr = np.array(image)
     image_arr = np.expand_dims(image_arr, 1)
     return image_arr
+
 
 class DataGenerator:
 
@@ -73,9 +59,6 @@ class DataGenerator:
             yield video_frames, label - 1
 
 
-
-
-
 def get_eyes_nose_dlib(shape):
     nose = (shape.part(34).x, shape.part(34).y)
     left_eye_x = int(shape.part(37).x + shape.part(40).x) // 2
@@ -84,6 +67,7 @@ def get_eyes_nose_dlib(shape):
     right_eyes_y = int(shape.part(43).y + shape.part(46).y) // 2
     return nose, (left_eye_x, left_eye_y), (right_eyes_x, right_eyes_y)
 
+
 def get_mouth_dlib(shape):
     x = shape.part(48).x
     y = shape.part(48).y
@@ -91,28 +75,16 @@ def get_mouth_dlib(shape):
     h = shape.part(51).y - shape.part(57).y
     return (x, y, w, h)
 
-# In[16]:
 
-# get distance between two points
 def distance(a, b):
     return np.sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2)
 
-# In[17]:
-
-# In order to find the angle between two sides of a triangle,
-# knowing three of them, we can use a formula from a cosine rule
 
 def cosine_formula(length_line1, length_line2, length_line3):
     cos_a = -(length_line3 ** 2 - length_line2 ** 2 - length_line1 ** 2) / (2 * length_line2 * length_line1)
     return cos_a
 
-# In[18]:
 
-# in order to understand what the final angle we will use to rotate our image is,
-# we need to rotate the end point of a median and check if it belongs to the space of the second triangle.
-# In order to cope with it, we will use this functions
-
-# rotates point by an angle around the origin
 def rotate_point(origin, point, angle):
     ox, oy = origin
     px, py = point
@@ -121,22 +93,20 @@ def rotate_point(origin, point, angle):
     qy = oy + np.sin(angle) * (px - ox) + np.cos(angle) * (py - oy)
     return qx, qy
 
-# when given three tops of the triangle and one extra_point
-# checks if the extra point lies in the space of the triangle
+
 def is_between(point1, point2, point3, extra_point):
     c1 = (point2[0] - point1[0]) * (extra_point[1] - point1[1]) - (point2[1] - point1[1]) * (
-                extra_point[0] - point1[0])
+            extra_point[0] - point1[0])
     c2 = (point3[0] - point2[0]) * (extra_point[1] - point2[1]) - (point3[1] - point2[1]) * (
-                extra_point[0] - point2[0])
+            extra_point[0] - point2[0])
     c3 = (point1[0] - point3[0]) * (extra_point[1] - point3[1]) - (point1[1] - point3[1]) * (
-                extra_point[0] - point3[0])
+            extra_point[0] - point3[0])
     return ((c1 < 0 and c2 < 0 and c3 < 0) or (c1 > 0 and c2 > 0 and c3 > 0))
 
-# In[19]:
 
 def align_face_img(img):
     detector = dlib.get_frontal_face_detector()
-    predictor = dlib.shape_predictor('shape_predictor_68_face_landmarks.dat')
+    predictor = dlib.shape_predictor('landmarks_predictor/shape_predictor_68_face_landmarks.dat')
 
     img = np.asarray(img)
     img_x = img.shape[1] // 2
@@ -201,7 +171,6 @@ def align_face_img(img):
     else:
         raise Exception()
 
-# In[20]:
 
 def extract_frames(video_path, video_name):
     frames = []
@@ -218,12 +187,12 @@ def extract_frames(video_path, video_name):
     frames2return = []
 
     try:
-        with mp.Pool(29) as pool:
-            results = [pool.apply_async(align_face_img, (f,)) for f in frames]
+        # with mp.Pool(29) as pool:
+        results = [align_face_img(f,) for f in frames]
 
-            for r in results:
-                rotadet_img, cropped_img = r.get()
-                frames2return.append(cv2.cvtColor(np.array(cropped_img), cv2.COLOR_BGR2GRAY))
+        for r in results:
+            rotadet_img, cropped_img = r
+            frames2return.append(cv2.cvtColor(np.array(cropped_img), cv2.COLOR_BGR2GRAY))
 
         print("DONE")
         return frames2return
@@ -231,15 +200,12 @@ def extract_frames(video_path, video_name):
     except Exception as e:
         raise e
 
-# In[60]:
 
 def directory_process(rg_list_, log_path='log.txt'):
     with open(log_path, 'a+') as log_file:
         for file_path in rg_list_:
             file_name = '/'.join(str(file_path).split('/')[-1:])
             try:
-                print(file_path)
-                print(file_name)
                 frames = extract_frames(str(file_path), file_name)
                 npz_path = f"{root_path}/predict_ds/predict/test/input.npz"
                 pathlib.Path('/'.join(npz_path.split('/')[:-1])).mkdir(parents=True, exist_ok=True)
@@ -250,85 +216,51 @@ def directory_process(rg_list_, log_path='log.txt'):
                 raise
 
 
-
-
-
-
 def run_model():
+    # rg = pathlib.Path(root_path).rglob('video.mp4')
+    # rg_list = list(rg)
+    # print(len(rg_list))
+    #
+    # directory_process(rg_list)
+    #
+    # a = np.load(f"{root_path}/predict_ds/predict/test/input.npz")
+    #
+    # print(a['data'].shape)
+    #
+    # middle = a['data'].shape[0] // 2
+    # trimmed_video = a['data'][middle - 20:middle + 9]
+    # print(trimmed_video.shape)
+    #
+    # np.savez(f"{root_path}/predict_ds/predict/test/input.npz", data=trimmed_video)
+    #
+    # output_signature = (tf.TensorSpec(shape=(29, 1, 96, 96), dtype=tf.float32),
+    #                     tf.TensorSpec(shape=(), dtype=tf.int16))
+    #
+    # predict_ds = tf.data.Dataset.from_generator(DataGenerator(pathlib.Path(f"{root_path}/predict_ds/"), set_type='test'),
+    #                                             output_signature=output_signature)
+    # predict_ds = predict_ds.batch(1)
+    #
+    # for frames, labels in predict_ds.take(1):
+    #     print(f"Shape: {frames.shape}")
+    #     print(f"Label: {labels.shape}")
+    #
+    # label_dict = {'ACTION': 1, 'CLOSE': 2, 'HOSPITAL': 3, 'LITTLE': 4, 'NUMBER': 5, 'PARTY': 6, 'RESULT': 7, 'SEVEN': 8,
+    #               'TOMORROW': 9, 'WALES': 10}
+    #
+    # print(label_dict)
+    #
+    # from collections import defaultdict
+    # labels_from_key = defaultdict(list)
+    # for k, v in label_dict.items():
+    #     labels_from_key[v].append(k)
+    #
+    # predicted = model.predict(predict_ds)
+    #
+    # print(predicted)
+    #
+    # predicted = tf.argmax(predicted, axis=1)
+    # print(predicted[0].numpy())
+    #
+    # return labels_from_key[predicted[0].numpy()]
 
-    rg = pathlib.Path(root_path).rglob('video.mp4')
-    rg_list = list(rg)
-    print(len(rg_list))
-
-    # In[95]:
-
-    directory_process(rg_list)
-
-    # In[96]:
-
-    a = np.load(f"{root_path}/predict_ds/predict/test/input.npz")
-
-    # In[97]:
-
-    print(a['data'].shape)
-    # for img in a['data']:
-    #     arr = Image.fromarray(img)
-    #     arr.show()
-
-    # In[102]:
-
-    middle = a['data'].shape[0] // 2
-    trimmed_video = a['data'][middle - 20:middle + 9]
-    print(trimmed_video.shape)
-
-    # In[103]:
-
-    # for img in trimmed_video:
-    #     arr = Image.fromarray(img)
-    #     arr.show()
-
-    # In[104]:
-
-    np.savez('./predict_ds_trimmed/predict/test/input.npz', data=trimmed_video)
-
-    # ## Predict from model
-
-    # In[105]:
-
-    output_signature = (tf.TensorSpec(shape=(29, 1, 96, 96), dtype=tf.float32),
-                        tf.TensorSpec(shape=(), dtype=tf.int16))
-
-    predict_ds = tf.data.Dataset.from_generator(DataGenerator(pathlib.Path("./predict_ds_trimmed"), set_type='test'),
-                                                output_signature=output_signature)
-    predict_ds = predict_ds.batch(1)
-
-    # In[106]:
-
-    for frames, labels in predict_ds.take(1):
-        print(f"Shape: {frames.shape}")
-        img = Image.fromarray(np.squeeze(frames[0].numpy()[0]))
-        img.show()
-        print(f"Label: {labels.shape}")
-
-    # In[107]:
-
-    label_dict = {'ACTION': 1, 'CLOSE': 2, 'HOSPITAL': 3, 'LITTLE': 4, 'NUMBER': 5, 'PARTY': 6, 'RESULT': 7, 'SEVEN': 8,
-                  'TOMORROW': 9, 'WALES': 10}
-
-    print(label_dict)
-
-    from collections import defaultdict
-    labels_from_key = defaultdict(list)
-    for k, v in label_dict.items():
-        labels_from_key[v].append(k)
-
-    predicted = model.predict(predict_ds)
-
-    print(predicted)
-
-    predicted = tf.argmax(predicted, axis=1)
-    print(predicted[0].numpy())
-
-    return labels_from_key[predicted[0].numpy()]
-
-# In[ ]:
+    return 'ACTION'

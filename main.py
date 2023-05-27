@@ -32,7 +32,6 @@ async def index(request: Request):
 
 @app.get("/info")
 def site_home():
-    word = run_model()
     return {
         "site": "Lips Don't Lie",
         "authors": "Raz Tamir, Naama Angel, Amit Hakmon, Adi Cohen Kashosh"
