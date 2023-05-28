@@ -10,7 +10,7 @@ import numpy as np
 import tensorflow as tf
 from PIL import Image
 
-# model = keras.models.load_model('model')
+model = keras.models.load_model('model')
 
 root_path = Path.cwd()
 
@@ -187,12 +187,12 @@ def extract_frames(video_path, video_name):
     frames2return = []
 
     try:
-        # with mp.Pool(29) as pool:
-        results = [align_face_img(f,) for f in frames]
+        with mp.Pool(29) as pool:
+            results = [pool.apply_async(align_face_img, (f,)) for f in frames]
 
-        for r in results:
-            rotadet_img, cropped_img = r
-            frames2return.append(cv2.cvtColor(np.array(cropped_img), cv2.COLOR_BGR2GRAY))
+            for r in results:
+                rotadet_img, cropped_img = r.get()
+                frames2return.append(cv2.cvtColor(np.array(cropped_img), cv2.COLOR_BGR2GRAY))
 
         print("DONE")
         return frames2return
@@ -217,50 +217,48 @@ def directory_process(rg_list_, log_path='log.txt'):
 
 
 def run_model():
-    # rg = pathlib.Path(root_path).rglob('video.mp4')
-    # rg_list = list(rg)
-    # print(len(rg_list))
-    #
-    # directory_process(rg_list)
-    #
-    # a = np.load(f"{root_path}/predict_ds/predict/test/input.npz")
-    #
-    # print(a['data'].shape)
-    #
-    # middle = a['data'].shape[0] // 2
-    # trimmed_video = a['data'][middle - 20:middle + 9]
-    # print(trimmed_video.shape)
-    #
-    # np.savez(f"{root_path}/predict_ds/predict/test/input.npz", data=trimmed_video)
-    #
-    # output_signature = (tf.TensorSpec(shape=(29, 1, 96, 96), dtype=tf.float32),
-    #                     tf.TensorSpec(shape=(), dtype=tf.int16))
-    #
-    # predict_ds = tf.data.Dataset.from_generator(DataGenerator(pathlib.Path(f"{root_path}/predict_ds/"), set_type='test'),
-    #                                             output_signature=output_signature)
-    # predict_ds = predict_ds.batch(1)
-    #
-    # for frames, labels in predict_ds.take(1):
-    #     print(f"Shape: {frames.shape}")
-    #     print(f"Label: {labels.shape}")
-    #
-    # label_dict = {'ACTION': 1, 'CLOSE': 2, 'HOSPITAL': 3, 'LITTLE': 4, 'NUMBER': 5, 'PARTY': 6, 'RESULT': 7, 'SEVEN': 8,
-    #               'TOMORROW': 9, 'WALES': 10}
-    #
-    # print(label_dict)
-    #
-    # from collections import defaultdict
-    # labels_from_key = defaultdict(list)
-    # for k, v in label_dict.items():
-    #     labels_from_key[v].append(k)
-    #
-    # predicted = model.predict(predict_ds)
-    #
-    # print(predicted)
-    #
-    # predicted = tf.argmax(predicted, axis=1)
-    # print(predicted[0].numpy())
-    #
-    # return labels_from_key[predicted[0].numpy()]
+    rg = pathlib.Path(root_path).rglob('video.mp4')
+    rg_list = list(rg)
+    print(len(rg_list))
 
-    return 'ACTION'
+    directory_process(rg_list)
+
+    a = np.load(f"{root_path}/predict_ds/predict/test/input.npz")
+
+    print(a['data'].shape)
+
+    middle = a['data'].shape[0] // 2
+    trimmed_video = a['data'][middle - 20:middle + 9]
+    print(trimmed_video.shape)
+
+    np.savez(f"{root_path}/predict_ds/predict/test/input.npz", data=trimmed_video)
+
+    output_signature = (tf.TensorSpec(shape=(29, 1, 96, 96), dtype=tf.float32),
+                        tf.TensorSpec(shape=(), dtype=tf.int16))
+
+    predict_ds = tf.data.Dataset.from_generator(DataGenerator(pathlib.Path(f"{root_path}/predict_ds/"), set_type='test'),
+                                                output_signature=output_signature)
+    predict_ds = predict_ds.batch(1)
+
+    for frames, labels in predict_ds.take(1):
+        print(f"Shape: {frames.shape}")
+        print(f"Label: {labels.shape}")
+
+    label_dict = {'ACTION': 1, 'CLOSE': 2, 'HOSPITAL': 3, 'LITTLE': 4, 'NUMBER': 5, 'PARTY': 6, 'RESULT': 7, 'SEVEN': 8,
+                  'TOMORROW': 9, 'WALES': 10}
+
+    print(label_dict)
+
+    from collections import defaultdict
+    labels_from_key = defaultdict(list)
+    for k, v in label_dict.items():
+        labels_from_key[v].append(k)
+
+    predicted = model.predict(predict_ds)
+
+    print(predicted)
+
+    predicted = tf.argmax(predicted, axis=1)
+    print(predicted[0].numpy())
+
+    return labels_from_key[predicted[0].numpy()]
