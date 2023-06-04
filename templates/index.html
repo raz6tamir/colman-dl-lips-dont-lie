@@ -10,9 +10,9 @@
         --palette-brown: #3b101a;
       }
       body {
+        font-family: "Gloria Hallelujah", cursive;
         color: var(--palette-brown);
         background-color: var(--palette-beige);
-        font-family: Arial, sans-serif;
         margin: 0;
         padding: 0;
       }
@@ -37,8 +37,8 @@
         will-change: box-shadow, transform;
         background: radial-gradient(
           100% 100% at 100% 0%,
-          #b04759 0%,
-          #e76161 100%
+          var(--palette-pink) 0%,
+          #da4f82 100%
         );
         box-shadow: 0px 2px 4px rgb(45 35 66 / 40%),
           0px 7px 13px -3px rgb(45 35 66 / 30%),
@@ -90,33 +90,48 @@
         text-align: center;
       }
 
+      #words-contianer {
+        width: 300px;
+      }
+
+      .row {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+      }
+
       .logo {
-        position: absolute;
         width: 300px;
         height: 300px;
       }
     </style>
   </head>
   <body>
-    <img class="logo" src="/static/lips-dont-lie-logo.png" />
-    <h1>Lips Don't Lie</h1>
-    <div id="all-container">
-      <h2>Words:</h2>
-      <div id="words"></div>
-      <video id="recordedVideo" width="640" height="480"></video>
-      <div id="button-container">
-        <button id="showVideoButton">Start</button>
-        <button id="recordButton" style="display: none">Record</button>
-        <button id="finishButton" style="display: none">
-          Finish Recording
-        </button>
-        <button id="uploadButton" style="display: none">Upload</button>
-        <button id="discardButton" style="display: none">
-          Discard Recording
-        </button>
-      </div>
+    <div class="row">
+      <img class="logo" src="/static/lips-dont-lie-logo.png" />
+      <div id="all-container">
+        <h1>Read My Lips:</h1>
 
-      <div id="message"></div>
+        <video id="recordedVideo" width="640" height="480"></video>
+
+        <div id="button-container">
+          <button id="showVideoButton">Start</button>
+          <button id="recordButton" style="display: none">Record</button>
+          <button id="finishButton" style="display: none">
+            Finish Recording
+          </button>
+          <button id="uploadButton" style="display: none">Upload</button>
+          <button id="discardButton" style="display: none">
+            Discard Recording
+          </button>
+        </div>
+
+        <div id="message"></div>
+      </div>
+      <div id="words-contianer">
+        <h2>Words:</h2>
+        <ul id="words"></ul>
+      </div>
     </div>
     <script>
       /**
@@ -175,8 +190,11 @@
       })
         .then((response) => response.json())
         .then((data) => {
-          console.log(data);
-          wordsElement.textContent = data;
+          data.forEach((word) => {
+            var li = document.createElement("li");
+            li.appendChild(document.createTextNode(word));
+            wordsElement.appendChild(li);
+          });
         })
         .catch((error) => {
           console.error("Error getting words", error);
