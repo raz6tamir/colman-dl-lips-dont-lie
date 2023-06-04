@@ -1,239 +1,260 @@
 <!DOCTYPE html>
 <html>
-<head>
+  <head>
     <title>Lips Don't Lie</title>
     <style>
-        body {
-            background-color: #f5f5f5;
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-        }
+      :root {
+        --palette-pink: #c01351;
+        --palette-beige: #f2cbc2;
+        --palette-red: #721324;
+        --palette-brown: #3b101a;
+      }
+      body {
+        color: var(--palette-brown);
+        background-color: var(--palette-beige);
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+      }
 
-        h1 {
-            color: #ff1744;
-            text-align: center;
-        }
+      h1 {
+        padding-top: 50px;
+        color: var(--palette-pink);
+        text-align: center;
+      }
 
-        #recordedVideo {
-            display: block;
-            margin: 0 auto;
-        }
+      #recordedVideo {
+        display: block;
+        margin: 0 auto;
+      }
 
-        button {
-            margin: 15px;
-            display: inline-block;
-            outline: 0;
-            border: 0;
-            cursor: pointer;
-            will-change: box-shadow, transform;
-            background: radial-gradient(100% 100% at 100% 0%, #B04759 0%, #E76161 100%);
-            box-shadow: 0px 2px 4px rgb(45 35 66 / 40%), 0px 7px 13px -3px rgb(45 35 66 / 30%), inset 0px -3px 0px rgb(58 65 111 / 50%);
-            padding: 0 32px;
-            border-radius: 6px;
-            color: #fff;
-            height: 48px;
-            font-size: 18px;
-            text-shadow: 0 1px 0 rgb(0 0 0 / 40%);
-            transition: box-shadow 0.15s ease, transform 0.15s ease;
-        }
+      button {
+        margin: 15px;
+        display: inline-block;
+        outline: 0;
+        border: 0;
+        cursor: pointer;
+        will-change: box-shadow, transform;
+        background: radial-gradient(
+          100% 100% at 100% 0%,
+          #b04759 0%,
+          #e76161 100%
+        );
+        box-shadow: 0px 2px 4px rgb(45 35 66 / 40%),
+          0px 7px 13px -3px rgb(45 35 66 / 30%),
+          inset 0px -3px 0px rgb(58 65 111 / 50%);
+        padding: 0 32px;
+        border-radius: 6px;
+        color: #fff;
+        height: 48px;
+        font-size: 18px;
+        text-shadow: 0 1px 0 rgb(0 0 0 / 40%);
+        transition: box-shadow 0.15s ease, transform 0.15s ease;
+      }
 
-        button:hover {
-            box-shadow: 0px 4px 8px rgb(45 35 66 / 40%), 0px 7px 13px -3px rgb(45 35 66 / 30%), inset 0px -3px 0px #F99B7D;
-            transform: translateY(-2px);
-        }
+      button:hover {
+        box-shadow: 0px 4px 8px rgb(45 35 66 / 40%),
+          0px 7px 13px -3px rgb(45 35 66 / 30%), inset 0px -3px 0px #f99b7d;
+        transform: translateY(-2px);
+      }
 
-        button:active {
-            box-shadow: inset 0px 3px 7px #F99B7D;
-            transform: translateY(2px);
-        }
+      button:active {
+        box-shadow: inset 0px 3px 7px #f99b7d;
+        transform: translateY(2px);
+      }
 
-        button:disabled {
-            box-shadow: inset 0px 3px 7px gray;
-            cursor: not-allowed;
-            transform: none;
-        }
+      button:disabled {
+        box-shadow: inset 0px 3px 7px gray;
+        cursor: not-allowed;
+        transform: none;
+      }
 
-        #message {
-            color: #ff1744;
-            font-size: 20px;
-            font-weight: bold;
-            text-align: center;
-        }
+      #message {
+        color: #ff1744;
+        font-size: 20px;
+        font-weight: bold;
+        text-align: center;
+      }
 
-        #button-container {
-            display: flex;
-            justify-content: center;
-            margin: 10px;
-        }
+      #button-container {
+        display: flex;
+        justify-content: center;
+        margin: 10px;
+      }
 
-        #all-container {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            margin: 10px;
-            text-align: center;
-        }
+      #all-container {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        margin: 10px;
+        text-align: center;
+      }
 
-
+      .logo {
+        position: absolute;
+        width: 300px;
+        height: 300px;
+      }
     </style>
-</head>
-<body>
-<h1>Lips Don't Lie</h1>
-<div id="all-container">
-    <h2>Words:</h2>
-    <div id="words"></div>
-    <video id="recordedVideo" width="640" height="480"></video>
-    <div id="button-container">
+  </head>
+  <body>
+    <img class="logo" src="/static/lips-dont-lie-logo.png" />
+    <h1>Lips Don't Lie</h1>
+    <div id="all-container">
+      <h2>Words:</h2>
+      <div id="words"></div>
+      <video id="recordedVideo" width="640" height="480"></video>
+      <div id="button-container">
         <button id="showVideoButton">Start</button>
         <button id="recordButton" style="display: none">Record</button>
-        <button id="finishButton" style="display: none">Finish Recording</button>
+        <button id="finishButton" style="display: none">
+          Finish Recording
+        </button>
         <button id="uploadButton" style="display: none">Upload</button>
-        <button id="discardButton" style="display: none">Discard Recording</button>
+        <button id="discardButton" style="display: none">
+          Discard Recording
+        </button>
+      </div>
+
+      <div id="message"></div>
     </div>
-
-    <div id="message"></div>
-</div>
-<script>
-    /**
-     * @param {Blob} videoFile
-     * @param {HTMLVideoElement} videoEl
-     * @returns {void}
-     */
-    function display_video( videoFile, videoEl ) {
-
+    <script>
+      /**
+       * @param {Blob} videoFile
+       * @param {HTMLVideoElement} videoEl
+       * @returns {void}
+       */
+      function display_video(videoFile, videoEl) {
         // Preconditions:
-        if( !( videoFile instanceof Blob ) ) throw new Error( '`videoFile` must be a Blob or File object.' ); // The `File` prototype extends the `Blob` prototype, so `instanceof Blob` works for both.
-        if( !( videoEl instanceof HTMLVideoElement ) ) throw new Error( '`videoEl` must be a <video> element.' );
+        if (!(videoFile instanceof Blob))
+          throw new Error("`videoFile` must be a Blob or File object."); // The `File` prototype extends the `Blob` prototype, so `instanceof Blob` works for both.
+        if (!(videoEl instanceof HTMLVideoElement))
+          throw new Error("`videoEl` must be a <video> element.");
 
         //
 
-        const newObjectUrl = URL.createObjectURL( videoFile );
+        const newObjectUrl = URL.createObjectURL(videoFile);
 
         // URLs created by `URL.createObjectURL` always use the `blob:` URI scheme: https://w3c.github.io/FileAPI/#dfn-createObjectURL
         const oldObjectUrl = videoEl.currentSrc;
-        if( oldObjectUrl && oldObjectUrl.startsWith('blob:') ) {
-            // It is very important to revoke the previous ObjectURL to prevent memory leaks. Un-set the `src` first.
-            // See https://developer.mozilla.org/en-US/docs/Web/API/URL/createObjectURL
+        if (oldObjectUrl && oldObjectUrl.startsWith("blob:")) {
+          // It is very important to revoke the previous ObjectURL to prevent memory leaks. Un-set the `src` first.
+          // See https://developer.mozilla.org/en-US/docs/Web/API/URL/createObjectURL
 
-            videoEl.src = ''; // <-- Un-set the src property *before* revoking the object URL.
-            URL.revokeObjectURL( oldObjectUrl );
+          videoEl.src = ""; // <-- Un-set the src property *before* revoking the object URL.
+          URL.revokeObjectURL(oldObjectUrl);
         }
 
         // Then set the new URL:
         videoEl.src = newObjectUrl;
-        console.log(newObjectUrl)
+        console.log(newObjectUrl);
 
         // And load it:
         videoEl.load(); // https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/load
 
-        videoEl.onloadeddata = function() {
-            videoEl.play();
-            videoElement.controls = true;
-        }
-    }
+        videoEl.onloadeddata = function () {
+          videoEl.play();
+          videoElement.controls = true;
+        };
+      }
 
+      const videoElement = document.getElementById("recordedVideo");
+      const recordButton = document.getElementById("recordButton");
+      const showVideoButton = document.getElementById("showVideoButton");
+      const finishButton = document.getElementById("finishButton");
+      const uploadButton = document.getElementById("uploadButton");
+      const discardButton = document.getElementById("discardButton");
+      const messageElement = document.getElementById("message");
+      const wordsElement = document.getElementById("words");
 
-    const videoElement = document.getElementById('recordedVideo');
-    const recordButton = document.getElementById('recordButton');
-    const showVideoButton = document.getElementById('showVideoButton');
-    const finishButton = document.getElementById('finishButton');
-    const uploadButton = document.getElementById('uploadButton');
-    const discardButton = document.getElementById('discardButton');
-    const messageElement = document.getElementById('message');
-    const wordsElement = document.getElementById('words');
+      let recordedChunks = [];
+      let mediaRecorder;
 
-    let recordedChunks = [];
-    let mediaRecorder;
-
-    fetch('/words', {
-        method: 'GET'
-    })
-        .then(response => response.json())
-        .then(data => {
-            console.log(data)
-            wordsElement.textContent = data;
+      fetch("/words", {
+        method: "GET",
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          console.log(data);
+          wordsElement.textContent = data;
         })
-        .catch(error => {
-            console.error('Error getting words', error);
+        .catch((error) => {
+          console.error("Error getting words", error);
         });
 
+      showVideoButton.addEventListener("click", () => {
+        showVideoButton.style.display = "none";
+        recordButton.style.display = "block";
+        navigator.mediaDevices
+          .getUserMedia({ video: true })
+          .then((stream) => {
+            videoElement.controls = false;
+            videoElement.srcObject = stream;
+            console.log(typeof stream);
+            console.log(stream);
+            videoElement.play();
+            mediaRecorder = new MediaRecorder(stream);
 
-    showVideoButton.addEventListener('click', () => {
-        showVideoButton.style.display = 'none';
-        recordButton.style.display = 'block';
-        navigator.mediaDevices.getUserMedia({video: true})
-            .then(stream => {
-                videoElement.controls = false;
-                videoElement.srcObject = stream;
-                console.log(typeof stream);
-                console.log(stream);
-                videoElement.play();
-                mediaRecorder = new MediaRecorder(stream);
-
-                mediaRecorder.addEventListener('dataavailable', event => {
-                    console.log("hi")
-                    if (event.data.size > 0) {
-                        recordedChunks.push(event.data);
-                    }
-                });
-
-            })
-            .catch(error => {
-                console.error('Error accessing webcam:', error);
+            mediaRecorder.addEventListener("dataavailable", (event) => {
+              console.log("hi");
+              if (event.data.size > 0) {
+                recordedChunks.push(event.data);
+              }
             });
+          })
+          .catch((error) => {
+            console.error("Error accessing webcam:", error);
+          });
+      });
 
-    });
-
-    recordButton.addEventListener('click', () => {
-        recordButton.style.display = 'none';
-        finishButton.style.display = 'block';
+      recordButton.addEventListener("click", () => {
+        recordButton.style.display = "none";
+        finishButton.style.display = "block";
         mediaRecorder.start();
-    });
+      });
 
-    finishButton.addEventListener('click', () => {
-        finishButton.style.display = 'none';
-        uploadButton.style.display = 'block';
-        discardButton.style.display = 'block';
+      finishButton.addEventListener("click", () => {
+        finishButton.style.display = "none";
+        uploadButton.style.display = "block";
+        discardButton.style.display = "block";
         mediaRecorder.stop();
         videoElement.pause();
-    });
+      });
 
-    uploadButton.addEventListener('click', () => {
-        uploadButton.style.display = 'none';
-        discardButton.style.display = 'none'
-        showVideoButton.style.display = 'block';
+      uploadButton.addEventListener("click", () => {
+        uploadButton.style.display = "none";
+        discardButton.style.display = "none";
+        showVideoButton.style.display = "block";
 
-
-        const blob = new Blob(recordedChunks, {type: 'video/webm'});
+        const blob = new Blob(recordedChunks, { type: "video/webm" });
         videoElement.srcObject = null;
-        display_video(blob, videoElement)
-        console.log(blob.stream())
+        display_video(blob, videoElement);
+        console.log(blob.stream());
 
         recordedChunks = [];
 
         const formData = new FormData();
-        formData.append('video', blob, 'recorded.webm');
+        formData.append("video", blob, "recorded.webm");
 
-        fetch('/upload', {
-            method: 'POST',
-            body: formData
+        fetch("/upload", {
+          method: "POST",
+          body: formData,
         })
-            .then(response => response.json())
-            .then(data => {
-                messageElement.textContent = data.message;
-            })
-            .catch(error => {
-                console.error('Error uploading video:', error);
-            });
-    });
+          .then((response) => response.json())
+          .then((data) => {
+            messageElement.textContent = data.message;
+          })
+          .catch((error) => {
+            console.error("Error uploading video:", error);
+          });
+      });
 
-    discardButton.addEventListener('click', () => {
-        showVideoButton.style.display = 'block';
-        discardButton.style.display = 'none';
-        uploadButton.style.display = 'none';
+      discardButton.addEventListener("click", () => {
+        showVideoButton.style.display = "block";
+        discardButton.style.display = "none";
+        uploadButton.style.display = "none";
         recordedChunks = [];
-    });
-</script>
-</body>
+      });
+    </script>
+  </body>
 </html>
