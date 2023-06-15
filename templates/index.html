@@ -10,7 +10,7 @@
         --palette-brown: #3b101a;
       }
       body {
-        font-family: "Gloria Hallelujah", cursive;
+        font-family: fantasy;
         color: var(--palette-brown);
         background-color: var(--palette-beige);
         margin: 0;
@@ -91,7 +91,72 @@
       }
 
       #words-contianer {
+        margin-right: 25px;
         width: 300px;
+        font-size: 20px;
+      }
+
+      #words {
+        padding-right: 35px;
+        font-size: 30px;
+        align-items: center;
+        display: flex;
+        flex-direction: column;
+        text-align: center;
+      }
+
+      #scroll-container {
+        border: 6px double var(--palette-red);
+        border-radius: 5px;
+        height: 80vh;
+        overflow: hidden;
+      }
+
+      #scroll-text {
+        height: 100%;
+        text-align: center;
+
+        /* animation properties */
+        -moz-transform: translateY(100%);
+        -webkit-transform: translateY(100%);
+        transform: translateY(100%);
+
+        -moz-animation: my-animation 15s linear infinite;
+        -webkit-animation: my-animation 15s linear infinite;
+        animation: my-animation 15s linear infinite;
+      }
+
+      /* for Firefox */
+      @-moz-keyframes my-animation {
+        from {
+          -moz-transform: translateY(10%);
+        }
+        to {
+          -moz-transform: translateY(-300%);
+        }
+      }
+
+      /* for Chrome */
+      @-webkit-keyframes my-animation {
+        from {
+          -webkit-transform: translateY(10%);
+        }
+        to {
+          -webkit-transform: translateY(-300%);
+        }
+      }
+
+      @keyframes my-animation {
+        from {
+          -moz-transform: translateY(10%);
+          -webkit-transform: translateY(10%);
+          transform: translateY(10%);
+        }
+        to {
+          -moz-transform: translateY(-300%);
+          -webkit-transform: translateY(-300%);
+          transform: translateY(-300%);
+        }
       }
 
       .row {
@@ -111,7 +176,6 @@
       <img class="logo" src="/static/lips-dont-lie-logo.png" />
       <div id="all-container">
         <h1>Read My Lips:</h1>
-
         <video id="recordedVideo" width="640" height="480"></video>
 
         <div id="button-container">
@@ -129,8 +193,12 @@
         <div id="message"></div>
       </div>
       <div id="words-contianer">
-        <h2>Words:</h2>
-        <ul id="words"></ul>
+        <h2>Words List:</h2>
+        <div id="scroll-container">
+          <div id="scroll-text">
+            <ul id="words"></ul>
+          </div>
+        </div>
       </div>
     </div>
     <script>
@@ -191,7 +259,7 @@
         .then((response) => response.json())
         .then((data) => {
           data.forEach((word) => {
-            var li = document.createElement("li");
+            var li = document.createElement("div");
             li.appendChild(document.createTextNode(word));
             wordsElement.appendChild(li);
           });
