@@ -10,7 +10,8 @@ import numpy as np
 import tensorflow as tf
 from PIL import Image
 
-model = keras.models.load_model('model')
+with tf.device("/gpu:0"):
+    model = keras.models.load_model('model')
 
 root_path = Path.cwd()
 
@@ -217,48 +218,49 @@ def directory_process(rg_list_, log_path='log.txt'):
 
 
 def run_model():
-    rg = pathlib.Path(root_path).rglob('video.mp4')
-    rg_list = list(rg)
-    print(len(rg_list))
+    with tf.device("/gpu:0"):
+        rg = pathlib.Path(root_path).rglob('video.mp4')
+        rg_list = list(rg)
+        print(len(rg_list))
 
-    directory_process(rg_list)
+        directory_process(rg_list)
 
-    a = np.load(f"{root_path}/predict_ds/predict/test/input.npz")
+        a = np.load(f"{root_path}/predict_ds/predict/test/input.npz")
 
-    print(a['data'].shape)
+        print(a['data'].shape)
 
-    middle = a['data'].shape[0] // 2
-    trimmed_video = a['data'][middle - 20:middle + 9]
-    print(trimmed_video.shape)
+        middle = a['data'].shape[0] // 2
+        trimmed_video = a['data'][middle - 20:middle + 9]
+        print(trimmed_video.shape)
 
-    np.savez(f"{root_path}/predict_ds/predict/test/input.npz", data=trimmed_video)
+        np.savez(f"{root_path}/predict_ds/predict/test/input.npz", data=trimmed_video)
 
-    output_signature = (tf.TensorSpec(shape=(29, 1, 96, 96), dtype=tf.float32),
-                        tf.TensorSpec(shape=(), dtype=tf.int16))
+        output_signature = (tf.TensorSpec(shape=(29, 1, 96, 96), dtype=tf.float32),
+                            tf.TensorSpec(shape=(), dtype=tf.int16))
 
-    predict_ds = tf.data.Dataset.from_generator(DataGenerator(pathlib.Path(f"{root_path}/predict_ds/"), set_type='test'),
-                                                output_signature=output_signature)
-    predict_ds = predict_ds.batch(1)
+        predict_ds = tf.data.Dataset.from_generator(DataGenerator(pathlib.Path(f"{root_path}/predict_ds/"), set_type='test'),
+                                                    output_signature=output_signature)
+        predict_ds = predict_ds.batch(1)
 
-    for frames, labels in predict_ds.take(1):
-        print(f"Shape: {frames.shape}")
-        print(f"Label: {labels.shape}")
+        for frames, labels in predict_ds.take(1):
+            print(f"Shape: {frames.shape}")
+            print(f"Label: {labels.shape}")
 
-    label_dict = {'ACTION': 1, 'CLOSE': 2, 'HOSPITAL': 3, 'LITTLE': 4, 'NUMBER': 5, 'PARTY': 6, 'RESULT': 7, 'SEVEN': 8,
-                  'TOMORROW': 9, 'WALES': 10}
+        label_dict = {'ACTION': 1, 'CLOSE': 2, 'HOSPITAL': 3, 'LITTLE': 4, 'NUMBER': 5, 'PARTY': 6, 'RESULT': 7, 'SEVEN': 8,
+                      'TOMORROW': 9, 'WALES': 10}
 
-    print(label_dict)
+        print(label_dict)
 
-    from collections import defaultdict
-    labels_from_key = defaultdict(list)
-    for k, v in label_dict.items():
-        labels_from_key[v].append(k)
+        from collections import defaultdict
+        labels_from_key = defaultdict(list)
+        for k, v in label_dict.items():
+            labels_from_key[v].append(k)
 
-    predicted = model.predict(predict_ds)
+        predicted = model.predict(predict_ds)
 
-    print(predicted)
+        print(predicted)
 
-    predicted = tf.argmax(predicted, axis=1)
-    print(predicted[0].numpy())
+        predicted = tf.argmax(predicted, axis=1)
+        print(predicted[0].numpy())
 
-    return labels_from_key[predicted[0].numpy()]
+        return labels_from_key[predicted[0].numpy()]
