@@ -179,8 +179,17 @@
         <video id="recordedVideo" width="640" height="480"></video>
 
         <div id="button-container">
-          <button id="showVideoButton">Start</button>
-          <input id="uploadVideoButton" type="file" accept="video/*">Upload</button>
+          <button id="showVideoButton">Record Video</button>
+          <button id="triggerUploadInput" onclick="getFile()">
+            Upload Video
+          </button>
+
+          <input
+            style="height: 0px; width: 0px; overflow: hidden"
+            id="uploadVideoButton"
+            type="file"
+            accept="video/*"
+          />
           <button id="recordButton" style="display: none">Record</button>
           <button id="finishButton" style="display: none">
             Finish Recording
@@ -244,25 +253,26 @@
 
       function upload_video(videoFile, videoFileName) {
         const formData = new FormData();
-          formData.append("video", videoFile, videoFileName);
+        formData.append("video", videoFile, videoFileName);
 
-          fetch("/upload", {
-            method: "POST",
-            body: formData,
+        fetch("/upload", {
+          method: "POST",
+          body: formData,
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            messageElement.textContent = data.message;
           })
-            .then((response) => response.json())
-            .then((data) => {
-              messageElement.textContent = data.message;
-            })
-            .catch((error) => {
-              console.error("Error uploading video:", error);
-            });
+          .catch((error) => {
+            console.error("Error uploading video:", error);
+          });
       }
 
       const videoElement = document.getElementById("recordedVideo");
       const recordButton = document.getElementById("recordButton");
       const showVideoButton = document.getElementById("showVideoButton");
       const uploadVideoButton = document.getElementById("uploadVideoButton");
+      const triggerUploadInput = document.getElementById("triggerUploadInput");
       const finishButton = document.getElementById("finishButton");
       const uploadButton = document.getElementById("uploadButton");
       const discardButton = document.getElementById("discardButton");
@@ -287,16 +297,17 @@
           console.error("Error getting words", error);
         });
 
-        uploadVideoButton.addEventListener("change", () => {
-          const videoFile = uploadVideoButton.files[0];
-          videoElement.srcObject = null;
-          display_video(videoFile, videoElement);
-          upload_video(videoFile, videoFile.name);
+      uploadVideoButton.addEventListener("change", () => {
+        const videoFile = uploadVideoButton.files[0];
+        videoElement.srcObject = null;
+        display_video(videoFile, videoElement);
+        upload_video(videoFile, videoFile.name);
       });
 
       showVideoButton.addEventListener("click", () => {
         showVideoButton.style.display = "none";
         uploadVideoButton.style.display = "none";
+        triggerUploadInput.style.display = "none";
         recordButton.style.display = "block";
         navigator.mediaDevices
           .getUserMedia({ video: true })
@@ -353,6 +364,11 @@
         uploadButton.style.display = "none";
         recordedChunks = [];
       });
+
+      function getFile() {
+        showVideoButton.style.display = "none";
+        uploadVideoButton.click();
+      }
     </script>
   </body>
 </html>
