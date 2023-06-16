@@ -28,6 +28,12 @@
         margin: 0 auto;
       }
 
+      video {
+        object-fit: cover;
+        border-radius: 20px;
+        border: 5px double var(--palette-red);
+      }
+
       button {
         margin: 15px;
         display: inline-block;
@@ -190,7 +196,9 @@
             type="file"
             accept="video/*"
           />
-          <button id="recordButton" style="display: none">Record</button>
+          <button id="recordButton" style="display: none">
+            Start Recording
+          </button>
           <button id="finishButton" style="display: none">
             Finish Recording
           </button>
@@ -252,17 +260,28 @@
       }
 
       function upload_video(videoFile, videoFileName) {
-        const formData = new FormData();
-        formData.append("video", videoFile, videoFileName);
-
-        fetch("/upload", {
+        fetch("/predict", {
           method: "POST",
-          body: formData,
         })
           .then((response) => response.json())
           .then((data) => {
             messageElement.textContent = data.message;
           })
+          .catch((error) => {
+            console.error("Error uploading video:", error);
+          });
+      }
+
+      function save_video(videoFile, videoFileName) {
+        const formData = new FormData();
+        formData.append("video", videoFile, videoFileName);
+
+        fetch("/save-video", {
+          method: "POST",
+          body: formData,
+        })
+          .then((response) => response.json())
+          .then((data) => {})
           .catch((error) => {
             console.error("Error uploading video:", error);
           });
@@ -301,7 +320,10 @@
         const videoFile = uploadVideoButton.files[0];
         videoElement.srcObject = null;
         display_video(videoFile, videoElement);
-        upload_video(videoFile, videoFile.name);
+        save_video(videoFile, videoFile.name);
+        uploadButton.style.display = "block";
+        showVideoButton.style.display = "none";
+        triggerUploadInput.style.display = "none";
       });
 
       showVideoButton.addEventListener("click", () => {
@@ -336,24 +358,29 @@
         mediaRecorder.start();
       });
 
-      finishButton.addEventListener("click", () => {
+      finishButton.addEventListener("click", async () => {
         finishButton.style.display = "none";
         uploadButton.style.display = "block";
         discardButton.style.display = "block";
         mediaRecorder.stop();
         videoElement.pause();
+
+        setTimeout(async () => {
+          const blob = await new Blob(recordedChunks, { type: "video/webm" });
+          videoElement.srcObject = null;
+          recordedChunks = [];
+          await save_video(blob, "recorded.webm");
+          display_video(blob, videoElement);
+        }, 500);
       });
 
-      uploadButton.addEventListener("click", () => {
+      uploadButton.addEventListener("click", async () => {
         uploadButton.style.display = "none";
         discardButton.style.display = "none";
         showVideoButton.style.display = "block";
         uploadVideoButton.style.display = "block";
 
-        const blob = new Blob(recordedChunks, { type: "video/webm" });
-        videoElement.srcObject = null;
-        display_video(blob, videoElement);
-        recordedChunks = [];
+        const blob = await new Blob(recordedChunks, { type: "video/webm" });
         upload_video(blob, "recorded.webm");
       });
 
@@ -366,7 +393,6 @@
       });
 
       function getFile() {
-        showVideoButton.style.display = "none";
         uploadVideoButton.click();
       }
     </script>
