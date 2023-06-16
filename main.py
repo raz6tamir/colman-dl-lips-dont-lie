@@ -34,7 +34,7 @@ async def index(request: Request):
 def site_home():
     return {
         "site": "Lips Don't Lie",
-        "authors": "Raz Tamir, Naama Angel, Amit Hakmon, Adi Cohen Kashosh"
+        "authors": "Raz Tamir, Naama Angel, Amit Hakmon, Adi Cohen Kadosh"
     }
 
 
