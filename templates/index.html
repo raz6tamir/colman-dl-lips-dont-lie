@@ -180,11 +180,12 @@
 
         <div id="button-container">
           <button id="showVideoButton">Start</button>
+          <input id="uploadVideoButton" type="file" accept="video/*">Upload</button>
           <button id="recordButton" style="display: none">Record</button>
           <button id="finishButton" style="display: none">
             Finish Recording
           </button>
-          <button id="uploadButton" style="display: none">Upload</button>
+          <button id="uploadButton" style="display: none">Read It!</button>
           <button id="discardButton" style="display: none">
             Discard Recording
           </button>
@@ -193,7 +194,7 @@
         <div id="message"></div>
       </div>
       <div id="words-contianer">
-        <h2>Words List:</h2>
+        <h2>Word List:</h2>
         <div id="scroll-container">
           <div id="scroll-text">
             <ul id="words"></ul>
@@ -241,9 +242,27 @@
         };
       }
 
+      function upload_video(videoFile, videoFileName) {
+        const formData = new FormData();
+          formData.append("video", videoFile, videoFileName);
+
+          fetch("/upload", {
+            method: "POST",
+            body: formData,
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              messageElement.textContent = data.message;
+            })
+            .catch((error) => {
+              console.error("Error uploading video:", error);
+            });
+      }
+
       const videoElement = document.getElementById("recordedVideo");
       const recordButton = document.getElementById("recordButton");
       const showVideoButton = document.getElementById("showVideoButton");
+      const uploadVideoButton = document.getElementById("uploadVideoButton");
       const finishButton = document.getElementById("finishButton");
       const uploadButton = document.getElementById("uploadButton");
       const discardButton = document.getElementById("discardButton");
@@ -268,8 +287,16 @@
           console.error("Error getting words", error);
         });
 
+        uploadVideoButton.addEventListener("change", () => {
+          const videoFile = uploadVideoButton.files[0];
+          videoElement.srcObject = null;
+          display_video(videoFile, videoElement);
+          upload_video(videoFile, videoFile.name);
+      });
+
       showVideoButton.addEventListener("click", () => {
         showVideoButton.style.display = "none";
+        uploadVideoButton.style.display = "none";
         recordButton.style.display = "block";
         navigator.mediaDevices
           .getUserMedia({ video: true })
@@ -282,7 +309,6 @@
             mediaRecorder = new MediaRecorder(stream);
 
             mediaRecorder.addEventListener("dataavailable", (event) => {
-              console.log("hi");
               if (event.data.size > 0) {
                 recordedChunks.push(event.data);
               }
@@ -311,32 +337,18 @@
         uploadButton.style.display = "none";
         discardButton.style.display = "none";
         showVideoButton.style.display = "block";
+        uploadVideoButton.style.display = "block";
 
         const blob = new Blob(recordedChunks, { type: "video/webm" });
         videoElement.srcObject = null;
         display_video(blob, videoElement);
-        console.log(blob.stream());
-
         recordedChunks = [];
-
-        const formData = new FormData();
-        formData.append("video", blob, "recorded.webm");
-
-        fetch("/upload", {
-          method: "POST",
-          body: formData,
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            messageElement.textContent = data.message;
-          })
-          .catch((error) => {
-            console.error("Error uploading video:", error);
-          });
+        upload_video(blob, "recorded.webm");
       });
 
       discardButton.addEventListener("click", () => {
         showVideoButton.style.display = "block";
+        uploadVideoButton.style.display = "block";
         discardButton.style.display = "none";
         uploadButton.style.display = "none";
         recordedChunks = [];
