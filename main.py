@@ -91,14 +91,17 @@ def get_words():
  'WOULD',
  'YOUNG']
 
-
-@app.post("/upload")
-async def upload_video(video: UploadFile = File(...)):
+@app.post("/save-video")
+async def save_video(video: UploadFile = File(...)):
     # Perform video processing
     async with aiofiles.open("./video.mp4", 'wb') as out_file:
         content = await video.read()  # async read
         await out_file.write(content)  # async write
 
+    return {"message": 'ok'}
+
+@app.post("/predict")
+async def predict():
     word = run_model()
 
     # Send the processed video or message back to the frontend
