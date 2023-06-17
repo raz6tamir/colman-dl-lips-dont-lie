@@ -5,6 +5,8 @@
 
 2023
 
+Python 3.8
+
 ```shell
 pip install -r requirements.txt
 ```
