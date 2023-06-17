@@ -150,20 +150,20 @@ def get_words_from_video(video_path):
 
     mouth_points_arr = []
 
-    # with mp.Pool(29) as pool:
-    #     results = [pool.apply_async(get_mouth_points_from_frame, (f,)) for f in frames]
+    with mp.Pool(10) as pool:
+        results = [pool.apply_async(get_mouth_points_from_frame, (f,)) for f in frames]
+
+        for r in results:
+            frame_mouth_points = r.get()
+            if len(frame_mouth_points):
+                mouth_points_arr.append(frame_mouth_points)
+
+    # results = [get_mouth_points_from_frame(f) for f in frames]
     #
-    #     for r in results:
-    #         frame_mouth_points = r.get()
-    #         if len(frame_mouth_points):
-    #             mouth_points_arr.append(frame_mouth_points)
-
-    results = [get_mouth_points_from_frame(f) for f in frames]
-
-    for r in results:
-        frame_mouth_points = r
-        if len(frame_mouth_points):
-            mouth_points_arr.append(frame_mouth_points)
+    # for r in results:
+    #     frame_mouth_points = r
+    #     if len(frame_mouth_points):
+    #         mouth_points_arr.append(frame_mouth_points)
 
     diff_arr = []
 
@@ -279,22 +279,22 @@ def align_face_img(img):
 def extract_frames(video_frames):
     frames2return = []
 
-    # with mp.Pool(29) as pool:
-    #     results = [pool.apply_async(align_face_img, (f,)) for f in video_frames]
+    with mp.Pool(10) as pool:
+        results = [pool.apply_async(align_face_img, (f,)) for f in video_frames]
+
+        for r in results:
+            isValid = r.get()
+            if isValid is not False:
+                rotadet_img, cropped_img = isValid
+                frames2return.append(cv2.cvtColor(np.array(cropped_img), cv2.COLOR_BGR2GRAY))
+
+    # results = [align_face_img(f) for f in video_frames]
     #
-    #     for r in results:
-    #         isValid = r.get()
-    #         if isValid is not False:
-    #             rotadet_img, cropped_img = isValid
-    #             frames2return.append(cv2.cvtColor(np.array(cropped_img), cv2.COLOR_BGR2GRAY))
-
-    results = [align_face_img(f) for f in video_frames]
-
-    for r in results:
-        isValid = r
-        if isValid is not False:
-            rotadet_img, cropped_img = isValid
-            frames2return.append(cv2.cvtColor(np.array(cropped_img), cv2.COLOR_BGR2GRAY))
+    # for r in results:
+    #     isValid = r
+    #     if isValid is not False:
+    #         rotadet_img, cropped_img = isValid
+    #         frames2return.append(cv2.cvtColor(np.array(cropped_img), cv2.COLOR_BGR2GRAY))
 
     print("DONE")
     return frames2return
@@ -406,7 +406,7 @@ def run_model():
     words_input = get_words_from_video(video_path_input)
     file_paths = video_process(video_path_input, words_input)
 
-    prediction = send_files('https://9dfb-34-73-176-7.ngrok.io/predict', file_paths)
+    prediction = send_files('https://b50e-35-230-171-61.ngrok.io/predict', file_paths)
 
     print(prediction)
 
