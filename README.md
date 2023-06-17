@@ -5,10 +5,12 @@
 
 2023
 
+Python 3.8
+
 ```shell
 pip install -r requirements.txt
 ```
 
 ```shell
-TF_CPP_MIN_LOG_LEVEL=2 uvicorn main:app --host 0.0.0.0
+uvicorn main:app --reload
 ```

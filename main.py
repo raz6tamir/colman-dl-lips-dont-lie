@@ -1,8 +1,9 @@
 import aiofiles
 from fastapi import FastAPI, UploadFile, File, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from fastapi.middleware.cors import CORSMiddleware
+
 from run_model import run_model
 
 app = FastAPI()
@@ -52,7 +53,7 @@ async def upload_video(video: UploadFile = File(...)):
         content = await video.read()  # async read
         await out_file.write(content)  # async write
 
-    word = run_model()
+    prediction = run_model()
 
     # Send the processed video or message back to the frontend
-    return {"message": word}
+    return prediction
