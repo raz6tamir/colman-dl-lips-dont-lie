@@ -103,7 +103,13 @@ async def save_video(video: UploadFile = File(...)):
 
 @app.post("/predict")
 async def predict():
-    prediction = run_model()
+    # prediction = run_model()
+
+    # # Send the processed video or message back to the frontend
+    # return prediction
+
+    # TODO: delete
+    # word = run_model()
 
     # Send the processed video or message back to the frontend
-    return prediction
+    return {"message": 'hello'}

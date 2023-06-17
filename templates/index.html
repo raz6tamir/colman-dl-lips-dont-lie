@@ -18,6 +18,7 @@
       }
 
       h1 {
+        letter-spacing: 3px;
         padding-top: 50px;
         color: var(--palette-pink);
         text-align: center;
@@ -29,12 +30,15 @@
       }
 
       video {
+        z-index: 2;
+
         object-fit: cover;
         border-radius: 20px;
         border: 5px double var(--palette-red);
       }
 
       button {
+        z-index: 2;
         margin: 15px;
         display: inline-block;
         outline: 0;
@@ -60,7 +64,8 @@
 
       button:hover {
         box-shadow: 0px 4px 8px rgb(45 35 66 / 40%),
-          0px 7px 13px -3px rgb(45 35 66 / 30%), inset 0px -3px 0px #f99b7d;
+          0px 7px 13px -3px rgb(45 35 66 / 30%),
+          inset 0px -3px 0px var(--palette-red);
         transform: translateY(-2px);
       }
 
@@ -76,10 +81,14 @@
       }
 
       #message {
-        color: #ff1744;
+        color: var(--palette-pink);
         font-size: 20px;
         font-weight: bold;
         text-align: center;
+      }
+
+      #message-title {
+        color: var(--palette-red);
       }
 
       #button-container {
@@ -176,13 +185,324 @@
         height: 300px;
       }
     </style>
+    <style>
+      @import url("https://fonts.googleapis.com/css?family=Raleway");
+
+      :root,
+      button {
+        font-family: fantasy;
+        font-size: large;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      .color {
+        background: linear-gradient(to right, #ffe0fe, #fad7d7);
+      }
+
+      p {
+        padding-bottom: 15px;
+      }
+
+      p:last-of-type {
+        padding-bottom: 0;
+      }
+
+      .try-again {
+        cursor: pointer;
+        position: relative;
+        font-size: 16px;
+      }
+
+      .try-again:after {
+        content: "";
+        position: absolute;
+        left: 15px;
+        right: 15px;
+        height: 1px;
+        top: 100%;
+        background: #ebebeb;
+        margin-top: 8px;
+        transition: all 0.3s ease;
+      }
+
+      .try-again:hover:after {
+        left: 40%;
+        right: 40%;
+      }
+
+      .wrapper {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .button {
+        cursor: pointer;
+        position: relative;
+        z-index: 2;
+        -webkit-appearance: none;
+        background: none;
+        outline: none;
+        border: none;
+        text-transform: uppercase;
+        letter-spacing: 3px;
+        border-radius: 2px;
+        transition: all 0.5s ease;
+        font-weight: 600;
+        font-size: 14px;
+        height: 60px;
+        width: 110px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid rgba(0, 0, 0, 0.06);
+        border-radius: 0px;
+        box-shadow: 0 0 0 white, 0 0 0 white;
+      }
+
+      .button-text {
+        display: inline-block;
+        position: relative;
+        z-index: 2;
+        background: linear-gradient(
+          to right,
+          var(--palette-pink),
+          var(--palette-brown)
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .button-circle {
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 6px;
+        width: 6px;
+        border-radius: 50%;
+        box-shadow: 0 0 10px var(--palette-pink), 0 0 20px var(--palette-pink),
+          0 0 30px var(--palette-pink);
+        transition: all 0.5s ease;
+      }
+
+      .button-circle2 {
+        top: auto;
+        bottom: 0;
+      }
+
+      .button-circle3 {
+        left: auto;
+        right: 0;
+        box-shadow: 0 0 10px var(--palette-brown), 0 0 20px var(--palette-brown),
+          0 0 30px var(--palette-brown);
+      }
+
+      .button-circle4 {
+        left: auto;
+        top: auto;
+        bottom: 0;
+        right: 0;
+        box-shadow: 0 0 10px var(--palette-brown), 0 0 20px var(--palette-brown),
+          0 0 30px var(--palette-brown);
+      }
+
+      .button:hover {
+        box-shadow: -15px 0 70px -15px var(--palette-pink),
+          15px 0 70px -15px var(--palette-brown);
+      }
+
+      .button:hover .button-circle1 {
+        transform: translate(-15px, -15px) scale(0);
+      }
+
+      .button:hover .button-circle2 {
+        transform: translate(-15px, 15px) scale(0);
+      }
+
+      .button:hover .button-circle3 {
+        transform: translate(15px, -15px) scale(0);
+      }
+
+      .button:hover .button-circle4 {
+        transform: translate(15px, 15px) scale(0);
+      }
+
+      .button:hover .button-circle {
+        box-shadow: none;
+      }
+
+      .popup {
+        opacity: 0;
+        visibility: hidden;
+        height: 400px;
+        width: 400px;
+        flex-shrink: 0;
+        border-radius: 3px;
+        position: relative;
+        z-index: 3;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+      }
+
+      .popup-inside {
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        width: 100%;
+        overflow: hidden;
+        border-radius: 50%;
+        box-shadow: 0 0 0 black;
+        transition: box-shadow 0.5s ease 0.7s, border-radius 0.35s ease 0.7s;
+      }
+
+      .backgrounds {
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        width: 100%;
+        overflow: hidden;
+      }
+
+      .background {
+        --offset: 0;
+        position: absolute;
+        left: var(--offset);
+        right: var(--offset);
+        bottom: var(--offset);
+        top: var(--offset);
+        background: linear-gradient(
+          to right,
+          var(--palette-pink),
+          var(--palette-brown)
+        );
+        transform: scale(0);
+        transition: all 0.5s ease 0s;
+        border-radius: 50%;
+      }
+
+      .background2 {
+        --offset: 10%;
+        position: absolute;
+        left: var(--offset);
+        right: var(--offset);
+        bottom: var(--offset);
+        top: var(--offset);
+        background: linear-gradient(to right, #cf1367, #3f1504);
+        transform: scale(0);
+        transition: all 0.5s ease 0.1s;
+      }
+
+      .background3 {
+        --offset: 20%;
+        position: absolute;
+        left: var(--offset);
+        right: var(--offset);
+        bottom: var(--offset);
+        top: var(--offset);
+        background: linear-gradient(to right, #ff83e0, #88400f);
+        z-index: 2;
+        transition: all 0.5s ease 0.2s;
+      }
+
+      .background4 {
+        --offset: 30%;
+        position: absolute;
+        left: var(--offset);
+        right: var(--offset);
+        bottom: var(--offset);
+        top: var(--offset);
+        background: linear-gradient(to right, #f076b1, #e3914d);
+        z-index: 3;
+        transition: all 0.5s ease 0.3s;
+      }
+
+      .background5 {
+        --offset: 40%;
+        position: absolute;
+        left: var(--offset);
+        right: var(--offset);
+        bottom: var(--offset);
+        top: var(--offset);
+        background: linear-gradient(to right, #ffc8ff, #fae4c3);
+        z-index: 4;
+        transition: all 0.5s ease 0.4s;
+      }
+
+      .background6 {
+        --offset: 40%;
+        position: absolute;
+        left: var(--offset);
+        right: var(--offset);
+        bottom: var(--offset);
+        top: var(--offset);
+        background: white;
+        z-index: 5;
+        transition: all 0.8s ease 0.4s;
+      }
+
+      .content {
+        --offset: 0;
+        position: absolute;
+        left: var(--offset);
+        right: var(--offset);
+        bottom: var(--offset);
+        top: var(--offset);
+        display: flex;
+        background-color: var(--palette-beige);
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: all 0.35s ease 0.75s;
+        z-index: 10;
+      }
+
+      .content-wrapper {
+        text-align: center;
+      }
+
+      body.active .content {
+        opacity: 1;
+        transform: none;
+      }
+
+      body.active .popup {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      body.active .popup-inside {
+        border-radius: 0;
+        box-shadow: -50px 0 200px -50px var(--palette-pink),
+          50px 0 200px -50px var(--palette-brown);
+      }
+
+      body.active .background {
+        transform: scale(1);
+      }
+
+      body.active .background6 {
+        transform: scale(8);
+      }
+    </style>
   </head>
   <body>
     <div class="row">
       <img class="logo" src="/static/lips-dont-lie-logo.png" />
       <div id="all-container">
         <h1>Read My Lips:</h1>
-        <video loop id="recordedVideo" width="640" height="480"></video>
+        <video muted loop id="recordedVideo" width="640" height="480"></video>
 
         <div id="button-container">
           <button id="predictButton" style="display: none">Read It!</button>
@@ -217,8 +537,6 @@
             Discard Recording
           </button>
         </div>
-
-        <div id="message"></div>
       </div>
       <div id="words-contianer">
         <h2>Word List:</h2>
@@ -229,7 +547,34 @@
         </div>
       </div>
     </div>
+
+    <div class="wrapper">
+      <div class="popup">
+        <div class="popup-inside">
+          <div class="backgrounds">
+            <div class="background"></div>
+            <div class="background background2"></div>
+            <div class="background background3"></div>
+            <div class="background background4"></div>
+            <div class="background background5"></div>
+            <div class="background background6"></div>
+          </div>
+        </div>
+        <div class="content">
+          <div class="content-wrapper">
+            <h1 id="message-title">The Words you said:</h1>
+            <p id="message"></p>
+            <p class="try-again" onclick="tryAgain()">Try Again</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <script>
+      function tryAgain() {
+        document.body.classList.remove("active");
+        videoElement.src = null;
+      }
       /**
        * @param {Blob} videoFile
        * @param {HTMLVideoElement} videoEl
@@ -377,6 +722,7 @@
         predictButton.style.display = "block";
         recordAgainButton.style.display = "block";
         mediaRecorder.stop();
+        console.log("stop");
         videoElement.pause();
 
         setTimeout(async () => {
@@ -395,6 +741,7 @@
         uploadAgainButton.style.display = "none";
         const blob = await new Blob(recordedChunks, { type: "video/webm" });
         upload_video(blob, "recorded.webm");
+        document.body.classList.add("active");
       });
 
       recordAgainButton.addEventListener("click", () => {
