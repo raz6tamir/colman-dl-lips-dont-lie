@@ -10,7 +10,7 @@
         --palette-brown: #3b101a;
       }
       body {
-        font-family: "Gloria Hallelujah", cursive;
+        font-family: fantasy;
         color: var(--palette-brown);
         background-color: var(--palette-beige);
         margin: 0;
@@ -26,6 +26,12 @@
       #recordedVideo {
         display: block;
         margin: 0 auto;
+      }
+
+      video {
+        object-fit: cover;
+        border-radius: 20px;
+        border: 5px double var(--palette-red);
       }
 
       button {
@@ -91,7 +97,72 @@
       }
 
       #words-contianer {
+        margin-right: 25px;
         width: 300px;
+        font-size: 20px;
+      }
+
+      #words {
+        padding-right: 35px;
+        font-size: 30px;
+        align-items: center;
+        display: flex;
+        flex-direction: column;
+        text-align: center;
+      }
+
+      #scroll-container {
+        border: 6px double var(--palette-red);
+        border-radius: 5px;
+        height: 80vh;
+        overflow: hidden;
+      }
+
+      #scroll-text {
+        height: 100%;
+        text-align: center;
+
+        /* animation properties */
+        -moz-transform: translateY(100%);
+        -webkit-transform: translateY(100%);
+        transform: translateY(100%);
+
+        -moz-animation: my-animation 15s linear infinite;
+        -webkit-animation: my-animation 15s linear infinite;
+        animation: my-animation 15s linear infinite;
+      }
+
+      /* for Firefox */
+      @-moz-keyframes my-animation {
+        from {
+          -moz-transform: translateY(10%);
+        }
+        to {
+          -moz-transform: translateY(-300%);
+        }
+      }
+
+      /* for Chrome */
+      @-webkit-keyframes my-animation {
+        from {
+          -webkit-transform: translateY(10%);
+        }
+        to {
+          -webkit-transform: translateY(-300%);
+        }
+      }
+
+      @keyframes my-animation {
+        from {
+          -moz-transform: translateY(10%);
+          -webkit-transform: translateY(10%);
+          transform: translateY(10%);
+        }
+        to {
+          -moz-transform: translateY(-300%);
+          -webkit-transform: translateY(-300%);
+          transform: translateY(-300%);
+        }
       }
 
       .row {
@@ -111,16 +182,27 @@
       <img class="logo" src="/static/lips-dont-lie-logo.png" />
       <div id="all-container">
         <h1>Read My Lips:</h1>
-
         <video id="recordedVideo" width="640" height="480"></video>
 
         <div id="button-container">
-          <button id="showVideoButton">Start</button>
-          <button id="recordButton" style="display: none">Record</button>
+          <button id="showVideoButton">Record Video</button>
+          <button id="triggerUploadInput" onclick="getFile()">
+            Upload Video
+          </button>
+
+          <input
+            style="height: 0px; width: 0px; overflow: hidden"
+            id="uploadVideoButton"
+            type="file"
+            accept="video/*"
+          />
+          <button id="recordButton" style="display: none">
+            Start Recording
+          </button>
           <button id="finishButton" style="display: none">
             Finish Recording
           </button>
-          <button id="uploadButton" style="display: none">Upload</button>
+          <button id="uploadButton" style="display: none">Read It!</button>
           <button id="discardButton" style="display: none">
             Discard Recording
           </button>
@@ -129,8 +211,12 @@
         <div id="message"></div>
       </div>
       <div id="words-contianer">
-        <h2>Words:</h2>
-        <ul id="words"></ul>
+        <h2>Word List:</h2>
+        <div id="scroll-container">
+          <div id="scroll-text">
+            <ul id="words"></ul>
+          </div>
+        </div>
       </div>
     </div>
     <script>
@@ -173,9 +259,39 @@
         };
       }
 
+      function upload_video(videoFile, videoFileName) {
+        fetch("/predict", {
+          method: "POST",
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            messageElement.textContent = data.message;
+          })
+          .catch((error) => {
+            console.error("Error uploading video:", error);
+          });
+      }
+
+      function save_video(videoFile, videoFileName) {
+        const formData = new FormData();
+        formData.append("video", videoFile, videoFileName);
+
+        fetch("/save-video", {
+          method: "POST",
+          body: formData,
+        })
+          .then((response) => response.json())
+          .then((data) => {})
+          .catch((error) => {
+            console.error("Error uploading video:", error);
+          });
+      }
+
       const videoElement = document.getElementById("recordedVideo");
       const recordButton = document.getElementById("recordButton");
       const showVideoButton = document.getElementById("showVideoButton");
+      const uploadVideoButton = document.getElementById("uploadVideoButton");
+      const triggerUploadInput = document.getElementById("triggerUploadInput");
       const finishButton = document.getElementById("finishButton");
       const uploadButton = document.getElementById("uploadButton");
       const discardButton = document.getElementById("discardButton");
@@ -191,7 +307,7 @@
         .then((response) => response.json())
         .then((data) => {
           data.forEach((word) => {
-            var li = document.createElement("li");
+            var li = document.createElement("div");
             li.appendChild(document.createTextNode(word));
             wordsElement.appendChild(li);
           });
@@ -200,8 +316,20 @@
           console.error("Error getting words", error);
         });
 
+      uploadVideoButton.addEventListener("change", () => {
+        const videoFile = uploadVideoButton.files[0];
+        videoElement.srcObject = null;
+        display_video(videoFile, videoElement);
+        save_video(videoFile, videoFile.name);
+        uploadButton.style.display = "block";
+        showVideoButton.style.display = "none";
+        triggerUploadInput.style.display = "none";
+      });
+
       showVideoButton.addEventListener("click", () => {
         showVideoButton.style.display = "none";
+        uploadVideoButton.style.display = "none";
+        triggerUploadInput.style.display = "none";
         recordButton.style.display = "block";
         navigator.mediaDevices
           .getUserMedia({ video: true })
@@ -214,7 +342,6 @@
             mediaRecorder = new MediaRecorder(stream);
 
             mediaRecorder.addEventListener("dataavailable", (event) => {
-              console.log("hi");
               if (event.data.size > 0) {
                 recordedChunks.push(event.data);
               }
@@ -231,48 +358,43 @@
         mediaRecorder.start();
       });
 
-      finishButton.addEventListener("click", () => {
+      finishButton.addEventListener("click", async () => {
         finishButton.style.display = "none";
         uploadButton.style.display = "block";
         discardButton.style.display = "block";
         mediaRecorder.stop();
         videoElement.pause();
+
+        setTimeout(async () => {
+          const blob = await new Blob(recordedChunks, { type: "video/webm" });
+          videoElement.srcObject = null;
+          recordedChunks = [];
+          await save_video(blob, "recorded.webm");
+          display_video(blob, videoElement);
+        }, 500);
       });
 
-      uploadButton.addEventListener("click", () => {
+      uploadButton.addEventListener("click", async () => {
         uploadButton.style.display = "none";
         discardButton.style.display = "none";
         showVideoButton.style.display = "block";
+        uploadVideoButton.style.display = "block";
 
-        const blob = new Blob(recordedChunks, { type: "video/webm" });
-        videoElement.srcObject = null;
-        display_video(blob, videoElement);
-        console.log(blob.stream());
-
-        recordedChunks = [];
-
-        const formData = new FormData();
-        formData.append("video", blob, "recorded.webm");
-
-        fetch("/upload", {
-          method: "POST",
-          body: formData,
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            messageElement.textContent = data.message;
-          })
-          .catch((error) => {
-            console.error("Error uploading video:", error);
-          });
+        const blob = await new Blob(recordedChunks, { type: "video/webm" });
+        upload_video(blob, "recorded.webm");
       });
 
       discardButton.addEventListener("click", () => {
         showVideoButton.style.display = "block";
+        uploadVideoButton.style.display = "block";
         discardButton.style.display = "none";
         uploadButton.style.display = "none";
         recordedChunks = [];
       });
+
+      function getFile() {
+        uploadVideoButton.click();
+      }
     </script>
   </body>
 </html>

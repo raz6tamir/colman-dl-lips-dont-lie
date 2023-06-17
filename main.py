@@ -35,24 +35,74 @@ async def index(request: Request):
 def site_home():
     return {
         "site": "Lips Don't Lie",
-        "authors": "Raz Tamir, Naama Angel, Amit Hakmon, Adi Cohen Kashosh"
+        "authors": "Raz Tamir, Naama Angel, Amit Hakmon, Adi Cohen Kadosh"
     }
 
 
 @app.get("/words")
 def get_words():
-    return [
-        'ACTION', 'CLOSE', 'HOSPITAL', 'LITTLE', 'NUMBER', 'PARTY', 'RESULT', 'SEVEN', 'TOMORROW', 'WALES'
-    ]
+    return ['ACTION',
+ 'ALWAYS',
+ 'BECAUSE',
+ 'BECOME',
+ 'BELIEVE',
+ 'CALLED',
+ 'CHANGE',
+ 'CLOSE',
+ 'DECIDED',
+ 'DIFFERENT',
+ 'EVERYONE',
+ 'FOOTBALL',
+ 'FOUND',
+ 'GREAT',
+ 'HAPPENED',
+ 'HOSPITAL',
+ 'INFORMATION',
+ 'INSIDE',
+ 'JUSTICE',
+ 'LITTLE',
+ 'MAYBE',
+ 'MISSING',
+ 'MONEY',
+ 'NUMBER',
+ 'OFFICE',
+ 'OTHER',
+ 'PARTY',
+ 'PEOPLE',
+ 'PLACES',
+ 'PRESS',
+ 'RESULT',
+ 'SCHOOL',
+ 'SEVEN',
+ 'SMALL',
+ 'SPEND',
+ 'STAND',
+ 'STRONG',
+ 'THESE',
+ 'THINK',
+ 'TIMES',
+ 'TODAY',
+ 'TOMORROW',
+ 'TRUST',
+ 'UNTIL',
+ 'VOTERS',
+ 'WALES',
+ 'WHERE',
+ 'WOMEN',
+ 'WOULD',
+ 'YOUNG']
 
-
-@app.post("/upload")
-async def upload_video(video: UploadFile = File(...)):
+@app.post("/save-video")
+async def save_video(video: UploadFile = File(...)):
     # Perform video processing
     async with aiofiles.open("./video.mp4", 'wb') as out_file:
         content = await video.read()  # async read
         await out_file.write(content)  # async write
 
+    return {"message": 'ok'}
+
+@app.post("/predict")
+async def predict():
     prediction = run_model()
 
     # Send the processed video or message back to the frontend
