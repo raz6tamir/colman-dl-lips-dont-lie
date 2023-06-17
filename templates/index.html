@@ -182,17 +182,28 @@
       <img class="logo" src="/static/lips-dont-lie-logo.png" />
       <div id="all-container">
         <h1>Read My Lips:</h1>
-        <video id="recordedVideo" width="640" height="480"></video>
+        <video loop id="recordedVideo" width="640" height="480"></video>
 
         <div id="button-container">
+          <button id="predictButton" style="display: none">Read It!</button>
+
           <button id="showVideoButton">Record Video</button>
-          <button id="triggerUploadInput" onclick="getFile()">
+          <button id="uploadVideoButton" onclick="getFile()">
             Upload Video
           </button>
-
+          <button
+            style="display: none"
+            id="uploadAgainButton"
+            onclick="getFile()"
+          >
+            Upload Again
+          </button>
+          <button id="recordAgainButton" style="display: none">
+            Record Again
+          </button>
           <input
             style="height: 0px; width: 0px; overflow: hidden"
-            id="uploadVideoButton"
+            id="videoFileInput"
             type="file"
             accept="video/*"
           />
@@ -202,8 +213,7 @@
           <button id="finishButton" style="display: none">
             Finish Recording
           </button>
-          <button id="uploadButton" style="display: none">Read It!</button>
-          <button id="discardButton" style="display: none">
+          <button id="recordAgainButton" style="display: none">
             Discard Recording
           </button>
         </div>
@@ -225,7 +235,7 @@
        * @param {HTMLVideoElement} videoEl
        * @returns {void}
        */
-      function display_video(videoFile, videoEl) {
+      function display_video(videoFile, videoEl, record) {
         // Preconditions:
         if (!(videoFile instanceof Blob))
           throw new Error("`videoFile` must be a Blob or File object."); // The `File` prototype extends the `Blob` prototype, so `instanceof Blob` works for both.
@@ -248,14 +258,13 @@
 
         // Then set the new URL:
         videoEl.src = newObjectUrl;
-        console.log(newObjectUrl);
 
         // And load it:
         videoEl.load(); // https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/load
 
         videoEl.onloadeddata = function () {
           videoEl.play();
-          videoElement.controls = true;
+          // videoElement.controls = true;
         };
       }
 
@@ -265,7 +274,9 @@
         })
           .then((response) => response.json())
           .then((data) => {
-            messageElement.textContent = data.message;
+            showVideoButton.style.display = "block";
+            uploadVideoButton.style.display = "block";
+            messageElement.textContent = data;
           })
           .catch((error) => {
             console.error("Error uploading video:", error);
@@ -290,11 +301,12 @@
       const videoElement = document.getElementById("recordedVideo");
       const recordButton = document.getElementById("recordButton");
       const showVideoButton = document.getElementById("showVideoButton");
+      const videoFileInput = document.getElementById("videoFileInput");
       const uploadVideoButton = document.getElementById("uploadVideoButton");
-      const triggerUploadInput = document.getElementById("triggerUploadInput");
       const finishButton = document.getElementById("finishButton");
-      const uploadButton = document.getElementById("uploadButton");
-      const discardButton = document.getElementById("discardButton");
+      const predictButton = document.getElementById("predictButton");
+      const uploadAgainButton = document.getElementById("uploadAgainButton");
+      const recordAgainButton = document.getElementById("recordAgainButton");
       const messageElement = document.getElementById("message");
       const wordsElement = document.getElementById("words");
 
@@ -316,20 +328,22 @@
           console.error("Error getting words", error);
         });
 
-      uploadVideoButton.addEventListener("change", () => {
-        const videoFile = uploadVideoButton.files[0];
+      videoFileInput.addEventListener("change", () => {
+        const videoFile = videoFileInput.files[0];
         videoElement.srcObject = null;
-        display_video(videoFile, videoElement);
+        display_video(videoFile, videoElement, false);
         save_video(videoFile, videoFile.name);
-        uploadButton.style.display = "block";
+        predictButton.style.display = "block";
         showVideoButton.style.display = "none";
-        triggerUploadInput.style.display = "none";
+        uploadVideoButton.style.display = "none";
+        uploadAgainButton.style.display = "block";
       });
 
       showVideoButton.addEventListener("click", () => {
+        videoElement.controls = false;
         showVideoButton.style.display = "none";
+        videoFileInput.style.display = "none";
         uploadVideoButton.style.display = "none";
-        triggerUploadInput.style.display = "none";
         recordButton.style.display = "block";
         navigator.mediaDevices
           .getUserMedia({ video: true })
@@ -360,8 +374,8 @@
 
       finishButton.addEventListener("click", async () => {
         finishButton.style.display = "none";
-        uploadButton.style.display = "block";
-        discardButton.style.display = "block";
+        predictButton.style.display = "block";
+        recordAgainButton.style.display = "block";
         mediaRecorder.stop();
         videoElement.pause();
 
@@ -370,30 +384,28 @@
           videoElement.srcObject = null;
           recordedChunks = [];
           await save_video(blob, "recorded.webm");
-          display_video(blob, videoElement);
+          display_video(blob, videoElement, true);
         }, 500);
       });
 
-      uploadButton.addEventListener("click", async () => {
-        uploadButton.style.display = "none";
-        discardButton.style.display = "none";
-        showVideoButton.style.display = "block";
-        uploadVideoButton.style.display = "block";
-
+      predictButton.addEventListener("click", async () => {
+        predictButton.style.display = "none";
+        uploadVideoButton.style.display = "none";
+        recordAgainButton.style.display = "none";
+        uploadAgainButton.style.display = "none";
         const blob = await new Blob(recordedChunks, { type: "video/webm" });
         upload_video(blob, "recorded.webm");
       });
 
-      discardButton.addEventListener("click", () => {
-        showVideoButton.style.display = "block";
-        uploadVideoButton.style.display = "block";
-        discardButton.style.display = "none";
-        uploadButton.style.display = "none";
+      recordAgainButton.addEventListener("click", () => {
+        showVideoButton.click();
+        recordAgainButton.style.display = "none";
+        predictButton.style.display = "none";
         recordedChunks = [];
       });
 
       function getFile() {
-        uploadVideoButton.click();
+        videoFileInput.click();
       }
     </script>
   </body>
