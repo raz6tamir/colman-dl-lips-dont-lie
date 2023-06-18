@@ -37,8 +37,19 @@
         border: 5px double var(--palette-red);
       }
 
+      #loader-gif-cont {
+        position: fixed;
+        z-index: 3;
+        width: 100%;
+        height: 100%;
+        margin-top: 20px;
+        justify-content: center;
+        align-items: center;
+        display: flex;
+      }
+
       button {
-        z-index: 2;
+        z-index: 4;
         margin: 15px;
         display: inline-block;
         outline: 0;
@@ -88,20 +99,26 @@
       }
 
       #message-title {
+        padding-bottom: 30px;
+        text-transform: uppercase;
+        letter-spacing: 3px;
+        font-size: 16px;
         color: var(--palette-red);
       }
 
       #button-container {
+        height: 620px;
         display: flex;
         justify-content: center;
         margin: 10px;
       }
 
-      #all-container {
+      #main-container {
         display: flex;
         flex-direction: column;
         justify-content: center;
         margin: 10px;
+        margin-left: 30px;
         text-align: center;
       }
 
@@ -247,7 +264,7 @@
       .button {
         cursor: pointer;
         position: relative;
-        z-index: 2;
+        z-index: 4;
         -webkit-appearance: none;
         background: none;
         outline: none;
@@ -271,7 +288,7 @@
       .button-text {
         display: inline-block;
         position: relative;
-        z-index: 2;
+        z-index: 4;
         background: linear-gradient(
           to right,
           var(--palette-pink),
@@ -340,6 +357,7 @@
       }
 
       .popup {
+        margin-top: 40px;
         opacity: 0;
         visibility: hidden;
         height: 400px;
@@ -498,9 +516,19 @@
     </style>
   </head>
   <body>
+    <div id="loader-gif-cont">
+      <img
+        id="loader-gif"
+        width="400px"
+        height="400px"
+        style="display: none; border-radius: 50px"
+        src="/static/loadinglips.gif"
+      />
+    </div>
+
     <div class="row">
       <img class="logo" src="/static/lips-dont-lie-logo.png" />
-      <div id="all-container">
+      <div id="main-container">
         <h1>Read My Lips:</h1>
         <video muted loop id="recordedVideo" width="640" height="480"></video>
 
@@ -621,7 +649,9 @@
           .then((data) => {
             showVideoButton.style.display = "block";
             uploadVideoButton.style.display = "block";
-            messageElement.textContent = data;
+            messageElement.textContent = data.join(" ");
+            document.body.classList.add("active");
+            gifLoader.style.display = "none";
           })
           .catch((error) => {
             console.error("Error uploading video:", error);
@@ -654,6 +684,7 @@
       const recordAgainButton = document.getElementById("recordAgainButton");
       const messageElement = document.getElementById("message");
       const wordsElement = document.getElementById("words");
+      const gifLoader = document.getElementById("loader-gif");
 
       let recordedChunks = [];
       let mediaRecorder;
@@ -735,13 +766,13 @@
       });
 
       predictButton.addEventListener("click", async () => {
+        gifLoader.style.display = "block";
         predictButton.style.display = "none";
         uploadVideoButton.style.display = "none";
         recordAgainButton.style.display = "none";
         uploadAgainButton.style.display = "none";
         const blob = await new Blob(recordedChunks, { type: "video/webm" });
         upload_video(blob, "recorded.webm");
-        document.body.classList.add("active");
       });
 
       recordAgainButton.addEventListener("click", () => {
