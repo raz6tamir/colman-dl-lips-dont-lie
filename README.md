@@ -3,6 +3,8 @@
 ----
 ### Colman Deep Learning Final Project
 
+Naama Angel, Raz Tamir, Adi Cohen Kadosh, Amit Hakmon
+
 2023
 
 Python 3.8
